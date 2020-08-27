@@ -1,14 +1,16 @@
-FROM ekidd/rust-musl-builder:1.36.0 as builder
+FROM library/rust:1-alpine as builder
+
+RUN apk add libc-dev make
 
 COPY Cargo.toml Makefile ./
 COPY src/ ./src/
 
 RUN make
-RUN strip /home/rust/src/target/x86_64-unknown-linux-musl/release/ping-exporter
+RUN strip /target/release/ping-exporter
 
 FROM alpine:latest
 
 WORKDIR /
-COPY --from=builder /home/rust/src/target/x86_64-unknown-linux-musl/release/ping-exporter ./
+COPY --from=builder /target/release/ping-exporter ./
 
 ENTRYPOINT ["/ping-exporter"]
